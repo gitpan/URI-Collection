@@ -1,7 +1,7 @@
-# $Id: Collection.pm,v 1.7 2003/08/11 14:21:13 gene Exp $
+# $Id: Collection.pm,v 1.8 2003/08/11 14:40:13 gene Exp $
 
 package URI::Collection;
-use vars qw($VERSION); $VERSION = '0.05';
+use vars qw($VERSION); $VERSION = '0.06';
 use strict;
 use Carp;
 use Cwd;
@@ -384,7 +384,9 @@ URI::Collection - Input and output link collections in different formats
   );
 
   $links = $collection->fetch_items(
-      name => $regexp,
+      category => $regexp_1,
+      title => $regexp_2,
+      url => $regexp_3,
   );
 
   $bookmarks = $collection->as_bookmark_file(
@@ -448,11 +450,20 @@ current directory.
 =head2 fetch_items
 
   $items = $collection->fetch_items(
-      name => $regexp,
+      category => $regexp_1,
+      title => $regexp_2,
+      url => $regexp_3,
   );
 
-Return a list of links and collections of links that have titles or
-categories similar to the name argument. 
+Return a list of links and collections of links that have titles, 
+urls or categories similar to the given regular expressions.
+
+If no arguments are provided, no links are returned.  This must 
+change (in the next release)!
+
+Note that if a category argument is supplied, only links under 
+matching categories will be found.  If no category argument is 
+provided, and link with a matching title or url will be returned.
 
 =head1 DEPENDENCIES
 
@@ -474,6 +485,9 @@ L<Netscape::Bookmarks::Alias>
 
 Allow restriction of link fetching for any saved information (not
 just category, title and url).
+
+Return all links and categories if no arguments are provided to the
+C<fetch_items> method.
 
 Ignore redundant links.
 
