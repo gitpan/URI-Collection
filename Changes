@@ -6,3 +6,6 @@ Revision history for Perl extension URI::Collection
 
 0.01.1  Sun Mar 16
     - Oops.  Fixed my Makefile.PL PREREQ_PMs.
+
+0.01.2  Sun Mar 16
+    - Fixed documentation.
