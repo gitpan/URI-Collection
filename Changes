@@ -32,3 +32,14 @@ Revision history for Perl extension URI::Collection
 
 0.03.1  Fri Jul 11 2003
     - Excised the unnecessary =head1 ABSTRACT section.
+
+0.04  Sat Aug  9 2003
+    - Put the pm under lib/URI.
+    - Made the icky globals object attributes.
+    - Cleaned up the _traverse() code.
+    - Enhanced the POD (eg. added the missing fetch_items() method).
+    - Made the testscript actually do something useful!  More to come
+      however...
+    - Put the bookmarks and favorites (ones without spaces in
+      filenames) in an eg/ directory.
+    - Removed the perl version restriction.

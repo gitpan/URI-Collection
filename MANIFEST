@@ -1,6 +1,12 @@
 Changes
-Makefile.PL
 MANIFEST
-Collection.pm
+MANIFEST.SKIP
+Makefile.PL
 README
+eg/Bookmarks.html
+eg/Favorites-WinIE/Links/Google.url
+eg/Favorites-WinIE/Thesaurus.com.url
+eg/Favorites-WinIE/cs/perl/CPAN.url
+eg/Favorites-WinIE/sci/LUGNET.url
+lib/URI/Collection.pm
 t/1.t
