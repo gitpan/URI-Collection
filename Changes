@@ -74,3 +74,19 @@ Revision history for Perl extension URI::Collection
 0.07  Mon Aug 11 2003
     - Replaced N::B::Alias=>0 with N::B::Link=>1.1, in the hope that
       "Josts Smokehouse" has an old version.  :-(
+
+0.08  Tue Aug 12 2003
+    - Nope.  That was not the answer.  LAMENESS.
+    - Made a _matches function to simplify fetch_items.
+    - Added an is_item method.
+    - Drop the foolish and unnecessary saving of bookmark and
+      favorites objects internally.
+    - Return the bookmarks or favorites as a string or hash of string
+      lists as well as writing them to disk. 
+    - Use IO:String to handle the annoying
+      Config::IniFiles::OutputConfig method.
+    - Update and enhance POD with better usage examples, etc.
+    - Added tests for all untested methods.
+    - Suddenly, a n::b::category needs an id attribute... that is not
+      even used, apparantly.
+    - Added _debug calls to as_bm_file.

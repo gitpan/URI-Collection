@@ -8,6 +8,7 @@ WriteMakefile(
         'File::Spec' => 0,
         'File::Find' => 0,
         'File::Path' => 0,
+        'IO::String' => 0,
         'Config::IniFiles' => 0,
         'Netscape::Bookmarks::Link' => 1.1,
     },
