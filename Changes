@@ -21,3 +21,7 @@ Revision history for Perl extension URI::Collection
       the Favorites category-paths.
     - Handled forward slashes in category names in a friendly, 
       transparent way.
+
+0.02.1  Wed Mar 19
+    - Aww!  I left in an incorrect NOTE section regarding a fix I had
+      made in the previous release.  :-(

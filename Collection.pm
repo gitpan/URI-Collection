@@ -2,7 +2,7 @@ package URI::Collection;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = '0.02';
+$VERSION = '0.02.1';
 
 use Carp;
 use Cwd;
@@ -395,11 +395,6 @@ instead of naively reconstituting one as a Netscape bookmark file.
 
 Make the internal hash structure an object attribute, instead of a 
 global variable.
-
-=head1 NOTE
-
-Currently, this module will convert forward slashes ("/") in 
-Favorite category names to an underscore character ("_").
 
 =head1 THANK YOU
 
