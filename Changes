@@ -4,3 +4,5 @@ Revision history for Perl extension URI::Collection
 	- original version; created by h2xs 1.22 with options
 		-X -n URI::Collection
 
+0.01.1  Sun Mar 16
+    - Oops.  Fixed my Makefile.PL PREREQ_PMs.

@@ -2,7 +2,7 @@ package URI::Collection;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = '0.01';
+$VERSION = '0.01.1';
 
 use Cwd;
 use File::Find;
@@ -17,15 +17,13 @@ my %cat_links;
 
 # XXX The fact that this is created as an object is just a thin veil
 # XXX of appearance, so that methods can be called.  A procedural
-# XXX interface would work, but wouldn't be as shiny.
+# XXX interface would work, but just wouldn't be as shiny, IMHO.
 sub new {
     my ($class, %args) = @_;
     my $self = {};
 
     _traverse ($args{directory}) if exists $args{directory};
     _parse_file ($args{file}) if exists $args{file};
-
-#use Data::Dumper;croak Dumper(\%cat_links);
 
     bless $self, $class;
     return $self;
