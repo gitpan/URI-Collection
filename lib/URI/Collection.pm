@@ -1,7 +1,7 @@
-# $Id: Collection.pm,v 1.8 2003/08/11 14:40:13 gene Exp $
+# $Id: Collection.pm,v 1.10 2003/08/11 20:16:12 gene Exp $
 
 package URI::Collection;
-use vars qw($VERSION); $VERSION = '0.06';
+use vars qw($VERSION); $VERSION = '0.07';
 use strict;
 use Carp;
 use Cwd;
@@ -479,7 +479,7 @@ L<File::Path>
 
 L<Config::IniFiles>
 
-L<Netscape::Bookmarks::Alias>
+L<Netscape::Bookmarks::Link>
 
 =head1 TO DO
 

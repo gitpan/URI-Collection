@@ -70,3 +70,7 @@ Revision history for Perl extension URI::Collection
 0.06  Mon Aug 11 2003
     - Whoops! Updating the POD to reflect functionality might be a
       good idea -before- uploading to CPAN. : \
+
+0.07  Mon Aug 11 2003
+    - Replaced N::B::Alias=>0 with N::B::Link=>1.1, in the hope that
+      "Josts Smokehouse" has an old version.  :-(

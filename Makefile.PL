@@ -9,7 +9,7 @@ WriteMakefile(
         'File::Find' => 0,
         'File::Path' => 0,
         'Config::IniFiles' => 0,
-        'Netscape::Bookmarks::Alias' => 0,
+        'Netscape::Bookmarks::Link' => 1.1,
     },
     ($] >= 5.005
         ? (ABSTRACT_FROM => 'lib/URI/Collection.pm',
