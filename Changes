@@ -43,3 +43,26 @@ Revision history for Perl extension URI::Collection
     - Put the bookmarks and favorites (ones without spaces in
       filenames) in an eg/ directory.
     - Removed the perl version restriction.
+
+0.05  Mon Aug 11 2003
+    - Had to change the "file_mode" value in the favs for some
+      mystery reason.  : (
+    - Replaced the file and directory object attributed with
+      links => [].
+    - Moved the _traverse and _parse_file calls to the _init method.
+    - Made _init handle the links arrayref.
+    - Made fetch_items build and return a hashref instead of an
+      arrayref.
+    - Allowed fetch_items to resrict what is found with category,
+      title and url arguments.
+    - Added the _title_and_url method to make fetch_items less
+      bloated looking.
+    - Made _traverse accept a directory argument again.
+    - Added \Q and \E to the category RE that strips off the path (in
+      _traverse).
+    - Added a 'Title' section to win IE favorites.
+    - Made _parse_file accept a filename argument again.
+    - Wrapped the Netscape::Bookmarks constructor in an eval (and
+      croak with $@).
+    - Fixed and enhanced the POD in numerous ways...
+    - Fixed the WinIE favorites in various ways, to enhance testing.

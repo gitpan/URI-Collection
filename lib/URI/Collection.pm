@@ -1,5 +1,7 @@
+# $Id: Collection.pm,v 1.7 2003/08/11 14:21:13 gene Exp $
+
 package URI::Collection;
-use vars qw($VERSION); $VERSION = '0.04';
+use vars qw($VERSION); $VERSION = '0.05';
 use strict;
 use Carp;
 use Cwd;
@@ -16,22 +18,35 @@ sub _debug {  # {{{
 sub new {  # {{{
     my ($class, %args) = @_;
     my $self = {
-        debug          => $args{debug} || 0,
-        favorites_path => $args{directory},
-        file           => $args{file},
-        cat_links      => {},
+        debug     => $args{debug} || 0,
+        links     => $args{links} || [],
+        cat_links => {},
     };
     bless $self, $class;
-
-    # Handle a M$ Windows Favorites directory tree.
-    $self->_traverse if $args{directory};
-
-    # Handle a Netscape style bookmark file.
-    $self->_parse_file if $args{file};
-
-#use Data::Dumper;croak Dumper([keys %{ $self->{cat_links} }]);
-
+    $self->_init($args{links}) if $args{links};
     return $self;
+}  # }}}
+
+sub _init {  # {{{
+    my $self = shift;
+
+    $self->{links} = [ $self->{links} ]
+        if $self->{links} && !ref($self->{links}) &&
+            (-f $self->{links} || -d $self->{links});
+
+    for (@{ $self->{links} }) {
+        croak "$_ does not exist.\n" unless -d || -f;
+
+        if (-d) {
+            # Handle a M$ Windows Favorites directory tree.
+            $self->_traverse($_);
+        }
+        elsif (-f) {
+            # Handle a Netscape style bookmark file.
+            $self->_parse_file($_);
+        }
+    }
+#use Data::Dumper;warn Dumper($self->{cat_links});
 }  # }}}
 
 sub as_bookmark_file {  # {{{
@@ -144,66 +159,117 @@ sub as_favorite_directory {  # {{{
 }  # }}}
 
 # Return all similar links or categories.
+# Gene: $self->{cat_links} is NOT NESTED. HTH. HAND.
 sub fetch_items {  # {{{
     my ($self, %args) = @_;
 $self->_debug('entering fetch_items');
-    my @items;
+    my %items;
 
+    # Step through every link.
     while (my ($category, $links) = each %{ $self->{cat_links} }) {
-$self->_debug("Cat: $category");
-        if ($args{name}) {
-            # Fetch the category similar to the given name.
-            push @items, $category if $category =~ /$args{name}/i;
-
-            # Fetch each link with a title similar to the given name.
+#$self->_debug("Cat: $category");
+        # If we are given a title, url or matching category...
+        if ($args{title} || $args{url} ||
+            ($args{category} && $category =~ /$args{category}/i)
+        ) {
+            # Fetch an entire category's links.
+$self->_debug("cat match: $category");
             for (@$links) {
-                push @items, $_ if $_->{title} =~ /$args{name}/i;
+                # Get the interesting bits.
+                my ($title, $url) = _title_and_url($_->{obj});
+                # XXX Yikes. This condition is... giant!
+                # (C ^ P) ^ (Y v X) v (~C ^ X)
+                # where X = (T ^ Q) v (U ^ R) and Y = ~(T v U)
+                if (
+($args{category} && $category =~ /$args{category}/i &&
+    (
+        !($args{title} || $args{url})
+        ||
+        ($args{title} && $title =~ /$args{title}/i)
+        ||
+        ($args{url} && $url =~ /$args{url}/i)
+    )
+)
+||
+(!$args{category} &&
+    (
+        ($args{title} && $title =~ /$args{title}/i)
+        ||
+        ($args{url} && $url =~ /$args{url}/i)
+    )
+)
+                ) {
+$self->_debug("link: $title => $url");
+                    push @{ $items{$category} }, { $title => $url }
+                }
             }
-        }
-
-        # Fetch an entire category's links.
-        if ($args{category} && $category =~ /$args{category}/i) {
-            push @items, { $category => $links };
         }
     }
 
 $self->_debug('exiting fetch_items');
-    return \@items;
+    return \%items;
+}  # }}}
+
+sub _title_and_url {  # {{{
+    my $link = shift;
+    my ($title, $url);
+
+    if (ref $link eq 'Netscape::Bookmarks::Link') {
+        ($title, $url) = ($link->title, $link->href);
+    }
+    elsif (ref $link eq 'Config::IniFiles') {
+        ($title, $url) = (
+            $link->val('Title', 'Title'),
+            $link->val('InternetShortcut', 'URL')
+        );
+    }
+
+    return $title => $url;
 }  # }}}
 
 # Step over the Favorites directory and add the categories and links
 # to our internal categories and links structure.
 sub _traverse {  # {{{
-    my $self = shift;
-$self->_debug('entering _traverse');
+    my ($self, $dir) = @_;
+$self->_debug("entering _traverse with $dir");
     find (
         sub {
             if (/^(.+?)\.url$/) {
                 # The file name - sans extension - is the title.
                 my $title = $1;
 
-                # Remove the Favorites tree path from the category name.
-                (my $category = $File::Find::dir) =~ s/^$self->{favorites_path}//;
+                # Remove the Favorites tree path from the category
+                # name.
+                (my $category = $File::Find::dir) =~ s/^\Q$dir\E//;
 
                 # Set the top level category if we are there.
                 $category = 'Favorites' unless $category;
 
-                # Convert the platform dependent path separators to slashes.
-                # NOTE: We Replace any forward slashes in category names
-                # with "back-slash escaped" forward slashes ("\/").
+                # Convert the platform dependent path separators to
+                # slashes.
+                # NOTE: We Replace any forward slashes in category
+                # names with "back-slash escaped" forward slashes
+                # ("\/").
                 $category = join '/',
                     map { s!\/!\\/!g; $_ }
                         grep { $_ }
                             File::Spec->splitdir($category);
 
+                my $obj = Config::IniFiles->new(
+                    '-file' => "$title.url"
+                );
+                $obj->AddSection('Title');
+                $obj->newval('Title', 'Title', $title);
+
                 # Add the category and link!
                 push @{ $self->{cat_links}{$category} }, {
                     title => $title,
-                    obj   => Config::IniFiles->new(-file => "$title.url"),
+                    obj   => $obj,
                 };
+$self->_debug($self->{cat_links}{$category}[-1]{obj});
             }
         },
-        $self->{favorites_path}
+        $dir  # This dangley bit is the directory into which we want to descend.
     );
 $self->_debug('exiting _traverse');
 }  # }}}
@@ -211,12 +277,13 @@ $self->_debug('exiting _traverse');
 # Parse the given bookmarks file into our internal categories and
 # links structure.
 sub _parse_file {  # {{{
-    my $self = shift;
-$self->_debug('entering _parse_file');
+    my ($self, $file) = @_;
+$self->_debug("entering _parse_file with $file");
 
     # Define a Netscape bookmarks object.
-    my $b = Netscape::Bookmarks->new($self->{file});
-$self->_debug("Netscape bookmarks object created with $self->{file}");
+    my $b = eval { Netscape::Bookmarks->new($file) };
+    croak "$@\n" if $@;
+$self->_debug("Netscape bookmarks object created with $file");
 
     # Declare our categories list and current category title.
     my (@category, $category);
@@ -228,7 +295,7 @@ $self->_debug("Netscape bookmarks object created with $self->{file}");
     $b->recurse(
         sub {
             my ($object, $level) = @_;
-$self->_debug("We are looking at a $object");
+$self->_debug($object);
 
             if ($object->isa('Netscape::Bookmarks::Category')) {
                 # Find the current / separated category name.
@@ -307,37 +374,45 @@ URI::Collection - Input and output link collections in different formats
   use URI::Collection;
 
   $collection = URI::Collection->new(
-      file      => $bookmarks,
-      directory => $favorites,
+      links => $bookmark_file,
+  );
+  $collection = URI::Collection->new(
+      links => $favorite_directory,
+  );
+  $collection = URI::Collection->new(
+      links => [ $bookmark_file, $favorite_directory ],
   );
 
   $links = $collection->fetch_items(
-      name     => $regexp,
-      category => $another_regexp,
+      name => $regexp,
   );
 
   $bookmarks = $collection->as_bookmark_file(
-      save_as => $file_name,
+      save_as => $bookmark_file,
   );
 
   $favorites = $collection->as_favorite_directory(
-      save_as => $directory_name,
+      save_as => $favorite_directory,
   );
 
 =head1 DESCRIPTION
 
-An object of class C<URI::Collection> represents a parsed Netscape 
-style bookmark file or a Windows "Favorites" directory with 
-multi-format output methods.
+An object of class C<URI::Collection> represents the links and 
+categories in parsed Netscape style bookmark files and Windows 
+"Favorites" directories, with output in either style.
 
 =head1 METHODS
 
 =head2 new
 
   $collection = URI::Collection->new(
-      debug     => $boolean,
-      file      => $bookmarks,
-      directory => $favorites,
+      links => $bookmark_file,
+  );
+  $collection = URI::Collection->new(
+      links => $favorite_directory,
+  );
+  $collection = URI::Collection->new(
+      links => [ $bookmark_file, $favorite_directory ],
   );
 
 Return a new C<URI::Collection> object.
@@ -347,18 +422,19 @@ This method mashes link store formats together, simultaneously.
 =head2 as_bookmark_file
 
   $bookmarks = $collection->as_bookmark_file(
-      save_as => $file_name,
+      save_as => $bookmark_file,
   );
 
 Output a Netscape style bookmark file as a string with the file 
 contents.
 
-Save the bookmarks as a file to disk, if asked to.
+Optionally, save the bookmarks as a file to disk, if given a 
+C<save_as> argument.
 
 =head2 as_favorite_directory
 
   $favorites = $collection->as_favorite_directory(
-      save_as => $directory_name,
+      save_as => $favorite_directory,
   );
 
 Write an M$ Windows "Favorites" folder to disk and output the top
@@ -372,16 +448,11 @@ current directory.
 =head2 fetch_items
 
   $items = $collection->fetch_items(
-      name     => $regexp,
-      category => $another_regexp,
+      name => $regexp,
   );
 
-Return a list of links and collections of links that have titles 
-similar to the name argument and categories similar to the category 
-argument.
-
-This list is returned in the native formats that the original links
-were parsed as - not some generic, internal format.
+Return a list of links and collections of links that have titles or
+categories similar to the name argument. 
 
 =head1 DEPENDENCIES
 
@@ -401,7 +472,10 @@ L<Netscape::Bookmarks::Alias>
 
 =head1 TO DO
 
-Throw out redundant links.
+Allow restriction of link fetching for any saved information (not
+just category, title and url).
+
+Ignore redundant links.
 
 Optionally return the M$ Favorites directory structure (as a
 variable) instead of writing it to disk.
@@ -410,10 +484,7 @@ Allow input/output of file and directory handles.
 
 Allow slicing of the category-links structure.
 
-Add a method to munge a set of links as bookmarks or favorites after 
-the constructor is called.
-
-Allow this link munging to happen under a given category or 
+Allow link munging to happen under a given category or 
 categories only.
 
 Check if links are active.
@@ -422,19 +493,15 @@ Update link titles and URLs if changed or moved.
 
 Mirror links?
 
-Save the parsed links in a "generic, internal" format, instead of the
-original formats that were parsed.  (This would mean that 
-fetch_items() would return all links and categories in this internal 
-format.
-
 Handle other bookmark formats (including some type of generic XML), 
 and "raw" (CSV) lists of links, to justify such a generic package 
 name.  This includes different platform flavors of every browser.
 
 Move the Favorites input/output functionality to a seperate module
-like "URI::Favorites::IE::Windows" and "URI::Favorites::IE::Mac", or
-some such.  Do the same with the above mentioned "platform flavors",
-such as Opera and Mosaic "Hotlists", and OmniWeb bookmarks, etc.
+like C<URI::Collection::Favorites::IE::Windows> and 
+C<URI::Collection::Favorites::IE::Mac>, or some such.  Do the same 
+with the above mentioned "platform flavors", such as Opera and Mosaic 
+"Hotlists", and OmniWeb bookmarks, etc.
 
 =head1 SEE ALSO
 

@@ -5,90 +5,53 @@ BEGIN { use_ok 'URI::Collection' };
 # Blank collection.
 my $c = URI::Collection->new;
 isa_ok $c, 'URI::Collection', 'with no arguments';
-is_deeply $c->fetch_items(name => '.*'), [], 'no links';
+is_deeply $c->fetch_items(category => '.*', title => '.*'), {},
+    'no links';
 
+# Bookmark collection.
 $c = URI::Collection->new(
 #    debug => 1,
-    file  => 'eg/Bookmarks.html',
+    links => 'eg/Bookmarks-Netscape.html',
 );
 isa_ok $c, 'URI::Collection', 'with bookmarks';
-my $items = [  # {{{
-    'Perl', {
-        'title' => 'Perl Mongers',
-        'obj' => bless({
-            'LAST_VISIT'    => '938494387',
-            'ADD_DATE'      => '938494410',
-            'ALIASOF'       => undef,
-            'TITLE'         => 'Perl Mongers',
-            'LAST_MODIFIED' => '938494387',
-            'DESCRIPTION'   => undef,
-            'ALIASID'       => undef,
-            'HREF'          => bless([ bless(do {\(my $o = 'http://www.perl.org/')}, 'URI::http'), undef ], 'URI::URL')
-        }, 'Netscape::Bookmarks::Link')
-    }
-];  # }}}
-is_deeply $c->fetch_items(name => 'perl'), $items, 'fetched bookmark items';
+my $items = {
+    'Perl' => [ { 'Perl Mongers' => 'http://www.perl.org/' } ]
+};
+is_deeply $c->fetch_items(title => 'perl'), $items,
+    'fetched bookmark items';
 
+# Favorites collection.
 $c = URI::Collection->new(
 #    debug => 1,
-    directory => 'eg/Favorites-WinIE',
+    links => 'eg/Favorites-WinIE',
 );
 isa_ok $c, 'URI::Collection', 'with favorites';
-$items = [  # HOLY CRAP FAVORITES ARE BLOATED {{{
-    {
-        'Links' => [
-            {
-                'title' => 'Google',
-                'obj' => bless( {
-                    'pCMT' => {
-                        'InternetShortcut' => {
-                            'Modified' => [],
-                            'IconIndex' => [],
-                            'IconFile' => [],
-                            'URL' => []
-                        },
-                        'DEFAULT' => { 'BASEURL' => [] }
-                    },
-                    'group' => {},
-                    'line_ends' => undef,
-                    'parms' => {
-                        'InternetShortcut' => [ 'URL', 'Modified', 'IconFile', 'IconIndex' ],
-                        'DEFAULT' => [ 'BASEURL' ]
-                    },
-                    'sects' => [ 'DEFAULT', 'InternetShortcut' ],
-                    'allowed_comment_char' => ';#',
-                    'nocase' => 0,
-                    'sCMT' => {
-                        'InternetShortcut' => [],
-                        'DEFAULT' => []
-                    },
-                    'cf' => 'Google.url',
-                    'firstload' => 0,
-                    'file_mode' => '100440',
-                    'v' => {
-                        'InternetShortcut' => {
-                            'Modified' => '8085EA6EC8F6C101DD',
-                            'IconIndex' => '1',
-                            'IconFile' => 'http://www.google.com/favicon.ico',
-                            'URL' => 'http://www.google.com/'
-                        },
-                        'DEFAULT' => {
-                            'BASEURL' => 'http://www.google.com/'
-                        }
-                    },
-                    'imported' => [],
-                    'comment_char' => '#',
-                    'default' => '',
-                    'startup_settings' => {
-                        '-file' => 'Google.url'
-                    }
-                }, 'Config::IniFiles' )
-            }
-        ]
-    }
-];  # }}}
-is_deeply $c->fetch_items(category => 'Links'), $items, 'fetched favorites items';
+$items = {
+    'cs/perl' => [
+        { 'CPAN' => 'http://www.cpan.org/' },
+        { 'YAPC' => 'http://www.yapc.org/' }
+    ]
+};
+is_deeply $c->fetch_items(category => 'perl'), $items,
+    'fetched favorite items';
+
+# Bookmark and Favorites collection.
+$c = URI::Collection->new(
+#    debug => 1,
+    links => [ 'eg/Bookmarks-Netscape.html', 'eg/Favorites-WinIE' ],
+);
+isa_ok $c, 'URI::Collection', 'with bookmarks and favorites';
+$items = {  # {{{
+    'foo/baz/blah' => [
+        { 'CPAN' => 'http://www.cpan.org/' },
+        { 'YAPC' => 'http://www.yapc.org/' }
+    ],
+    'foo/bar' => [
+        { 'Google' => 'http://www.google.com/' }
+    ]
+};  # }}}
+is_deeply $c->fetch_items(url => '[^\s]', category => 'foo'), $items,
+    'fetched bookmark and favorite items';
 
 __END__
-
 Next is testing of the save_as features...

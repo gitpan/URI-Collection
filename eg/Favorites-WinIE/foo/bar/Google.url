@@ -1,0 +1,8 @@
+[DEFAULT]
+BASEURL=http://www.google.com/
+
+[InternetShortcut]
+URL=http://www.google.com/
+Modified=8085EA6EC8F6C101DD
+IconFile=http://www.google.com/favicon.ico
+IconIndex=1

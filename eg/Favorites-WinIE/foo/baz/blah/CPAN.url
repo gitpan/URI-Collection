@@ -1,0 +1,6 @@
+[DEFAULT]
+BASEURL=http://www.cpan.org/
+
+[InternetShortcut]
+URL=http://www.cpan.org/
+Modified=C02AB82BF80BC20193

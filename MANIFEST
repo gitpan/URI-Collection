@@ -3,10 +3,14 @@ MANIFEST
 MANIFEST.SKIP
 Makefile.PL
 README
-eg/Bookmarks.html
+eg/Bookmarks-Netscape.html
 eg/Favorites-WinIE/Links/Google.url
+eg/Favorites-WinIE/ShorterLink.com.url
 eg/Favorites-WinIE/Thesaurus.com.url
 eg/Favorites-WinIE/cs/perl/CPAN.url
-eg/Favorites-WinIE/sci/LUGNET.url
+eg/Favorites-WinIE/cs/perl/YAPC.url
+eg/Favorites-WinIE/foo/bar/Google.url
+eg/Favorites-WinIE/foo/baz/blah/CPAN.url
+eg/Favorites-WinIE/foo/baz/blah/YAPC.url
 lib/URI/Collection.pm
 t/1.t
