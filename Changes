@@ -9,3 +9,6 @@ Revision history for Perl extension URI::Collection
 
 0.01.2  Sun Mar 16
     - Fixed documentation.
+
+0.01.3  Mon Mar 17
+    - Repaired Makefile.PL and respective documentation.

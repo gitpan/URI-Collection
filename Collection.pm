@@ -1,7 +1,8 @@
 package URI::Collection;
 
 use strict;
-use vars qw($VERSION); $VERSION = '0.01.2';
+use vars qw($VERSION);
+$VERSION = '0.01.3';
 
 use Cwd;
 use File::Find;
@@ -299,7 +300,7 @@ L<File::Path>
 
 L<Config::IniFiles>
 
-L<Netscape::Bookmarks>
+L<Netscape::Bookmarks::Alias>
 
 =head1 TODO
 

@@ -1,4 +1,4 @@
-URI/Collection version 0.01.2
+URI/Collection version 0.01.3
 =============================
 
 INSTALLATION
@@ -20,7 +20,7 @@ File::Path
 
 Config::IniFiles
 
-Netscape::Bookmarks
+Netscape::Bookmarks::Alias
 
 COPYRIGHT AND LICENCE
 
