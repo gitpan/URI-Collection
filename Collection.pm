@@ -2,16 +2,21 @@ package URI::Collection;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = '0.01.3';
+$VERSION = '0.02';
 
+use Carp;
 use Cwd;
+use File::Spec;
 use File::Find;
 use File::Path;
 use Config::IniFiles;
 use Netscape::Bookmarks;
 
+# XXX These globals should be object attributes, instead.
 # Declare our internal category/link structure.
 my %cat_links;
+# Declare the top level Favorites directory name holder.
+my $favorites_path;
 
 # PUBLIC METHODS
 
@@ -22,10 +27,16 @@ sub new {
     my ($class, %args) = @_;
     my $self = {};
 
-    # Handle a M$ Windows Favories directory tree.
-    _traverse ($args{directory}) if exists $args{directory};
-    # Handle a Netscrape style bookmark file.
-    _parse_file ($args{file}) if exists $args{file};
+    # Handle a M$ Windows Favorites directory tree.
+    if ($args{directory}) {
+        $favorites_path = $args{directory};
+        _traverse ($favorites_path);
+    }
+
+    # Handle a Netscape style bookmark file.
+    _parse_file ($args{file}) if $args{file};
+
+#use Data::Dumper;croak Dumper([keys %cat_links]);
 
     bless $self, $class;
     return $self;
@@ -52,7 +63,9 @@ sub as_bookmark_file {
 
         # Make a bookmark category for each title in the category
         # path.
-        for my $title (split /\//, $path) {
+        # NOTE: This split means, "split on any forward slashes that
+        # are not preceeded by a backslash."
+        for my $title (split /(?<!\\)\//, $path) {
             # Set the current category to the top level if we are
             # just starting out.
             $category = $top unless $category;
@@ -86,6 +99,14 @@ sub as_bookmark_file {
         }
     }
 
+    # Save the bookmarks as a file, if told to.
+    if ($args{save_as}) {
+        open BOOKMARKS, "> $args{save_as}"
+            or croak "Can't write $args{save_as} - $!\n";
+        print BOOKMARKS $top->as_string ();
+        close BOOKMARKS;
+    }
+
     # Return the bookmark file contents.
     return $top->as_string ();
 }
@@ -94,17 +115,13 @@ sub as_favorite_directory {
     my ($self, %args) = @_;
 
     # Create a top level directory for our Favorites.
-    # NOTE: If we don't create an extra level here, we will 
-    # over-write our Favorites.
-    # XXX This can't be the right way to do it.
-    my $top = 'Favorites-' . time ();
-    mkdir $top;
+    my $top = $args{save_as} || 'Favorites-' . time ();
+    mkpath $top;
     chdir $top;
     $top = getcwd;
 
     # Build the Favorites tree with Internet Shortcut files.
     for my $path (keys %cat_links) {
-#        print "[$path]\n";
         mkpath $path;
         chdir $path;
 
@@ -117,7 +134,10 @@ sub as_favorite_directory {
             else {
                 # Handle a Netscape style entry.
                 my ($title, $obj) = bookmark_to_favorite ($link);
-                # XXX Sanitize the title as a proper filename.
+                # Sanitize the title as a proper filename.
+                # XXX This is a dumb hack that is probably not 
+                # platform independant at all.  There has to be a
+                # better way.
                 $title =~ s/[^\w\s$%\-@~`'!()^#&+,;=.\[\]{}]/_/g;
                 $obj->WriteConfig ("$title.url");
             }
@@ -127,7 +147,7 @@ sub as_favorite_directory {
         chdir $top;
     }
 
-    # Return the name of the top level category directory.
+    # Return the top level directory.
     return $top;
 }
 
@@ -135,17 +155,35 @@ sub as_favorite_directory {
 
 # Step over the Favorites directory and add the categories and links
 # to our internal categories and links structure.
-sub _traverse { find(\&_wanted, @_) }
-sub _wanted {
-    if (/^(.+?)\.url$/) {
-        my $title = $1;
-#        print "\t$title\n";
-        push @{ $cat_links{$File::Find::dir} }, {
-            title => $title,
-            obj => Config::IniFiles->new (-file => "$title.url"),
-        };
-    }
-}
+sub _traverse { find (
+    sub {
+        if (/^(.+?)\.url$/) {
+            # The file name - sans extension - is the title.
+            my $title = $1;
+
+            # Remove the Favorites tree path from the category name.
+            (my $category = $File::Find::dir) =~ s/^$favorites_path//;
+
+            # Set the top level category if we are there.
+            $category = 'Favorites' unless $category;
+
+            # Convert the platform dependent path separators to slashes.
+            # NOTE: We Replace any forward slashes in category names
+            # with "back-slash escaped" forward slashes ("\/").
+            $category = join '/',
+                map { s!\/!\\/!g; $_ }
+                    grep { $_ }
+                        File::Spec->splitdir ($category);
+
+            # Add the category and link!
+            push @{ $cat_links{$category} }, {
+                title => $title,
+                obj => Config::IniFiles->new (-file => "$title.url"),
+            };
+        }
+    },
+    @_
+) }
 
 # Parse the given bookmarks file into our internal categories and
 # links structure.
@@ -176,16 +214,12 @@ sub _parse_file {
             }
 
             # Set the current category and level.
+            # NOTE that / is forced as the "path separator" here.
             $category = join '/', @category;
             $last_level = $level;
 
-# Debugging
-#            print "[$category]\n";
-#            print "\t" x $level .'['. $object->title ." ($level)]\n";
         }
         elsif ($object->isa ('Netscape::Bookmarks::Link')) {
-# Debugging
-#            print "\t" . $object->title . "\n";
             # Add the category and link to our internal structure.
             push @{ $cat_links{$category} }, {
                 title => $object->title,
@@ -245,13 +279,18 @@ formats.
 
   use URI::Collection;
 
-  $store = URI::Collection->new (
+  $collection = URI::Collection->new (
       file      => $bookmarks,
       directory => $favorites,
   );
 
-  $file_contents = $store->as_bookmark_file ();
-  $top_directory = $store->as_favorite_directory ();
+  $bookmarks = $collection->as_bookmark_file (
+      save_as => $file_name,
+  );
+
+  $favorites = $collection->as_favorite_directory (
+      save_as => $directory_name,
+  );
 
 =head1 ABSTRACT
 
@@ -267,7 +306,7 @@ output methods.
 
 =head2 new
 
-  $store = URI::Collection->new (
+  $collection = URI::Collection->new (
       file      => $bookmarks,
       directory => $favorites,
   );
@@ -278,21 +317,36 @@ This method mashes link store formats together, simultaneously.
 
 =head2 as_bookmark_file
 
-  $bookmarks = $store->as_bookmark_file ();
+  $bookmarks = $collection->as_bookmark_file (
+      save_as => $file_name,
+  );
 
 Output a Netscape style bookmark file as a string with the file 
 contents.
 
+Save the bookmarks as a file to disk, if asked to.
+
 =head2 as_favorite_directory
 
-  $favorites = $store->as_favorite_directory ();
+  $favorites = $collection->as_favorite_directory (
+      save_as => $directory_name,
+  );
 
 Write an M$ Windows "Favorites" folder to disk and output the top
 level directory name.
 
+A specific directory name can be provided for the location of the
+Favorites tree to write.  If one is not provided, a folder named 
+"Favorites-" with the system time stamp appened is written to the 
+current directory. 
+
 =head1 DEPENDENCIES
 
+L<Carp>
+
 L<Cwd>
+
+L<File::Spec>
 
 L<File::Find>
 
@@ -302,21 +356,19 @@ L<Config::IniFiles>
 
 L<Netscape::Bookmarks::Alias>
 
-=head1 TODO
+=head1 TO DO
 
-Make tests damnit!
+Make proper tests, damnit!
 
-Add a "save as" filename argument (and function) to the 
-as_bookmark_file () method.
+Throw out redundant links.
 
 Optionally return the M$ Favorites directory structure (as a
 variable) instead of writing it to disk.
 
-Handle the top Favorites path better!
+Handle the top Favorites path better - possibly just rename the first
+directory containing *.url files.
 
-Allow munging of file and directory handles to bookmark/favorites.
-
-Throw out redundant links.
+Allow input/output of file and directory handles.
 
 Allow slicing of the category-links structure.
 
@@ -334,8 +386,25 @@ Mirror links?
 Handle other bookmark formats (if there even are any) and "raw" lists
 of links, to justify such a generic package name.  :-)
 
+Move the Favorites input/output functionality to a seperate module
+like "URI::Favorites::IE::Windows" and "URI::Favorites::IE::Mac", or
+some such.
+
+Make a separate module for building an OmniWeb bookmark file, 
+instead of naively reconstituting one as a Netscape bookmark file.
+
 Make the internal hash structure an object attribute, instead of a 
 global variable.
+
+=head1 NOTE
+
+Currently, this module will convert forward slashes ("/") in 
+Favorite category names to an underscore character ("_").
+
+=head1 THANK YOU
+
+A special thank you goes to my friends on rhizo #perl for answering 
+my random questions.  : )
 
 =head1 AUTHOR
 

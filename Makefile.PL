@@ -4,7 +4,9 @@ WriteMakefile(
     'NAME'         => 'URI::Collection',
     'VERSION_FROM' => 'Collection.pm',
     'PREREQ_PM'    => {
+        'Carp' => 0,
         'Cwd' => 0,
+        'File::Spec' => 0,
         'File::Find' => 0,
         'File::Path' => 0,
         'Config::IniFiles' => 0,

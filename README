@@ -1,5 +1,5 @@
-URI/Collection version 0.01.3
-=============================
+URI/Collection version 0.02
+===========================
 
 INSTALLATION
 
@@ -12,7 +12,11 @@ To install this module type the following:
 
 DEPENDENCIES
 
+Carp
+
 Cwd
+
+File::Spec
 
 File::Find
 

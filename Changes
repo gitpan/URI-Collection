@@ -12,3 +12,12 @@ Revision history for Perl extension URI::Collection
 
 0.01.3  Mon Mar 17
     - Repaired Makefile.PL and respective documentation.
+
+0.02  Wed Mar 19
+    - Added a save_as feature to the as_* () methods.
+    - Saved to the correct top level Favorites directory, instead of a
+      tree-mirror of the entire path to the Favorites.
+    - Used File::Spec and be portable across platforms with respect to
+      the Favorites category-paths.
+    - Handled forward slashes in category names in a friendly, 
+      transparent way.
