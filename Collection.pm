@@ -1,8 +1,7 @@
 package URI::Collection;
 
 use strict;
-use vars qw($VERSION);
-$VERSION = '0.02.1';
+use vars qw($VERSION); $VERSION = '0.03.1';
 
 use Carp;
 use Cwd;
@@ -20,6 +19,7 @@ my $favorites_path;
 
 # PUBLIC METHODS
 
+# constructor {{{
 # XXX The fact that this is created as an object is just a thin veil
 # XXX of appearance, so that methods can be called.  A procedural
 # XXX interface would work, but just wouldn't be as shiny, IMHO.
@@ -41,7 +41,9 @@ sub new {
     bless $self, $class;
     return $self;
 }
+# }}}
 
+# as_bookmark_file {{{
 sub as_bookmark_file {
     my ($self, %args) = @_;
 
@@ -94,7 +96,7 @@ sub as_bookmark_file {
             }
             else {
                 # Handle a Windows Favorite entry.
-                $category->add (favorite_to_bookmark ($link));
+                $category->add (_favorite_to_bookmark ($link));
             }
         }
     }
@@ -110,7 +112,9 @@ sub as_bookmark_file {
     # Return the bookmark file contents.
     return $top->as_string ();
 }
+# }}}
 
+# as_favorite_directory {{{
 sub as_favorite_directory {
     my ($self, %args) = @_;
 
@@ -133,7 +137,7 @@ sub as_favorite_directory {
             }
             else {
                 # Handle a Netscape style entry.
-                my ($title, $obj) = bookmark_to_favorite ($link);
+                my ($title, $obj) = _bookmark_to_favorite ($link);
                 # Sanitize the title as a proper filename.
                 # XXX This is a dumb hack that is probably not 
                 # platform independant at all.  There has to be a
@@ -150,9 +154,37 @@ sub as_favorite_directory {
     # Return the top level directory.
     return $top;
 }
+# }}}
+
+# fetch_items {{{
+sub fetch_items {
+    my ($self, %args) = @_;
+    my @items;
+
+    while (my ($category, $links) = each %cat_links) {
+        if ($args{name}) {
+            # Fetch the category similar to the given name.
+            push @items, $category if $category =~ /$args{name}/i;
+
+            # Fetch each link with a title similar to the given name.
+            for (@$links) {
+                push @items, $_ if $_->{title} =~ /$args{name}/i;
+            }
+        }
+
+        # Fetch an entire category's links.
+        if ($args{category} && $category =~ /$args{category}/i) {
+            push @items, { $category => $links };
+        }
+    }
+
+    return \@items;
+}
+# }}}
 
 # PRIVATE FUNCTIONS
 
+# _traverse {{{
 # Step over the Favorites directory and add the categories and links
 # to our internal categories and links structure.
 sub _traverse { find (
@@ -184,7 +216,9 @@ sub _traverse { find (
     },
     @_
 ) }
+# }}}
 
+# _parse_file {{{
 # Parse the given bookmarks file into our internal categories and
 # links structure.
 sub _parse_file {
@@ -231,9 +265,11 @@ sub _parse_file {
     # Call the Netscape::Bookmarks recursion method.
     $b->recurse ($sub);
 }
+# }}}
 
+# _bookmark_to_favorite {{{
 # http://www.cyanwerks.com/file-format-url.html
-sub bookmark_to_favorite {
+sub _bookmark_to_favorite {
     my $link = shift;
 
     # Define an Internet Shortcut object based on the given Netscape
@@ -247,8 +283,10 @@ sub bookmark_to_favorite {
     # Return the Internet Shortcut title and object.
     return $link->{obj}->title, $obj;
 }
+# }}}
 
-sub favorite_to_bookmark {
+# _favorite_to_bookmark {{{
+sub _favorite_to_bookmark {
     my $link = shift;
 
     # Define a Netscape bookmark link based on the given Internet
@@ -266,6 +304,7 @@ sub favorite_to_bookmark {
     # Return the Netscape bookmark object.
     return $obj;
 }
+# }}}
 
 1;
 __END__
@@ -291,10 +330,6 @@ formats.
   $favorites = $collection->as_favorite_directory (
       save_as => $directory_name,
   );
-
-=head1 ABSTRACT
-
-Input and output link collections in different formats.
 
 =head1 DESCRIPTION
 
@@ -365,9 +400,6 @@ Throw out redundant links.
 Optionally return the M$ Favorites directory structure (as a
 variable) instead of writing it to disk.
 
-Handle the top Favorites path better - possibly just rename the first
-directory containing *.url files.
-
 Allow input/output of file and directory handles.
 
 Allow slicing of the category-links structure.
@@ -383,27 +415,74 @@ Update link titles and URLs if changed or moved.
 
 Mirror links?
 
-Handle other bookmark formats (if there even are any) and "raw" lists
-of links, to justify such a generic package name.  :-)
+Make the internal global variables object attributes.
+
+Handle other bookmark formats (including some type of generic XML), 
+and "raw" (CSV) lists of links, to justify such a generic package 
+name.  This includes different platform flavors of every browser.
 
 Move the Favorites input/output functionality to a seperate module
 like "URI::Favorites::IE::Windows" and "URI::Favorites::IE::Mac", or
-some such.
-
-Make a separate module for building an OmniWeb bookmark file, 
-instead of naively reconstituting one as a Netscape bookmark file.
-
-Make the internal hash structure an object attribute, instead of a 
-global variable.
+some such.  Do the same with the above mentioned "platform flavors",
+such as Opera and Mosaic "Hotlists", and OmniWeb bookmarks, etc.
 
 =head1 THANK YOU
 
 A special thank you goes to my friends on rhizo #perl for answering 
 my random questions.  : )
 
+=head1 SIMILAR STUFF
+
+So there are an enormous number of web-based bookmark managers out 
+there (see http://useful.webwizards.net/wbbm.htm), which I don't care
+about at all.  What I do care about are multi-format link converters.
+Here are a few that I found:
+
+Online manager:
+
+C<http://www.linkagogo.com/>
+
+CDML Universal Bookmark Manager (for M$ Windows only):
+
+C<http://www.cdml.com/products/ubm.asp>
+
+OperaHotlist2HTML:
+
+C<http://nelson.oit.unc.edu/~alanh/operahotlist2html/>
+
+bk2site:
+
+C<http://bk2site.sourceforge.net/>
+
+Windows favorites convertor:
+
+C<http://www.moodfarm.demon.co.uk/download/fav2html.pl>
+
+bookmarker:
+
+C<http://www.renaghan.com/pcr/bookmarker.html>
+
+Columbine Bookmark Merge:
+
+C<http://home.earthlink.net/~garycramblitt/>
+
+XBEL Bookmarks Editor:
+
+C<http://pyxml.sourceforge.net/topics/xbel/>
+
+And here are similar perl modules:
+
+L<URI::Bookmarks>
+
+L<BabelObjects::Component::Directory::Bookmark>
+
+L<WWW::Bookmark::Crawler>
+
+L<Apache::XBEL>
+
 =head1 AUTHOR
 
-Gene Boggs E<lt>cpan@ology.netE<gt>
+Gene Boggs E<lt>gene@cpan.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 

@@ -17,7 +17,7 @@ Revision history for Perl extension URI::Collection
     - Added a save_as feature to the as_* () methods.
     - Saved to the correct top level Favorites directory, instead of a
       tree-mirror of the entire path to the Favorites.
-    - Used File::Spec and be portable across platforms with respect to
+    - Used File::Spec to be portable across platforms with respect to
       the Favorites category-paths.
     - Handled forward slashes in category names in a friendly, 
       transparent way.
@@ -25,3 +25,10 @@ Revision history for Perl extension URI::Collection
 0.02.1  Wed Mar 19
     - Aww!  I left in an incorrect NOTE section regarding a fix I had
       made in the previous release.  :-(
+
+0.03  Thu Mar 20
+    - Added a "SIMILAR STUFF" documentation section.
+    - Fleshed out my increasingly less feeble tests.
+
+0.03.1  Fri Jul 11 2003
+    - Excised the unnecessary =head1 ABSTRACT section.

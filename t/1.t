@@ -7,7 +7,8 @@ my ($collection, $links, $location);
 
 # Blank collection.
 $collection = URI::Collection->new ();
-is ref ($collection), 'URI::Collection', 'create empty collection';
+is ref ($collection), 'URI::Collection',
+    'create empty collection';
 
 __END__
 # XXX These tests totally suck.  Real ones are coming shortly...
