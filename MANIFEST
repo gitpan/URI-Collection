@@ -1,5 +1,5 @@
 Changes
-MANIFEST
+MANIFEST			This list of files
 MANIFEST.SKIP
 Makefile.PL
 README
@@ -14,3 +14,4 @@ eg/Favorites-WinIE/foo/baz/blah/CPAN.url
 eg/Favorites-WinIE/foo/baz/blah/YAPC.url
 lib/URI/Collection.pm
 t/1.t
+t/2.t

@@ -1,11 +1,12 @@
+#!/usr/bin/perl -w
 use strict;
 use Test::More 'no_plan';#tests => 2;
-BEGIN { use_ok 'URI::Collection' };
 
-$| = 1;
+use_ok 'URI::Collection';
 
 # Blank collection.
 my $c = URI::Collection->new;
+
 isa_ok $c, 'URI::Collection', 'with no arguments';
 is_deeply $c->fetch_items(category => '.*', title => '.*'), {},
     'no links';
@@ -16,6 +17,7 @@ $c = URI::Collection->new(
     links => 'eg/Bookmarks-Netscape.html',
 );
 isa_ok $c, 'URI::Collection', 'with bookmarks';
+
 my $items = {
     'Perl' => [ { 'Perl Mongers' => 'http://www.perl.org/' } ]
 };
@@ -28,6 +30,7 @@ $c = URI::Collection->new(
     links => 'eg/Favorites-WinIE',
 );
 isa_ok $c, 'URI::Collection', 'with favorites';
+
 $items = {
     'cs/perl' => [
         { 'CPAN' => 'http://www.cpan.org/' },
@@ -43,7 +46,8 @@ $c = URI::Collection->new(
     links => [ 'eg/Bookmarks-Netscape.html', 'eg/Favorites-WinIE' ],
 );
 isa_ok $c, 'URI::Collection', 'with bookmarks and favorites';
-$items = {  # {{{
+
+$items = {
     'foo/baz/blah' => [
         { 'CPAN' => 'http://www.cpan.org/' },
         { 'YAPC' => 'http://www.yapc.org/' }
@@ -51,15 +55,19 @@ $items = {  # {{{
     'foo/bar' => [
         { 'Google' => 'http://www.google.com/' }
     ]
-};  # }}}
+};
 is_deeply $c->fetch_items(url => '[^\s]', category => 'foo'), $items,
     'fetched bookmark and favorite items';
 
-$items = {  # {{{
+$items = {
     'Hardware' => [
-        { 'Cisco Connection Online by Cisco Systems, Inc.' => 'http://www.cisco.com/' },
-        { 'O\'Reilly & Associates' => 'http://www.oreilly.com/' },
-        { 'Amazon.com--Earth\'s Biggest Selection' => 'http://www.amazon.com/exec/obidos/subst/home/home.html/002-1250643-7915022' }
+    #-------------------------
+    #   { 'Cisco Connection Online by Cisco Systems, Inc.' => 'http://www.cisco.com/' },
+    #   { 'O\'Reilly & Associates' => 'http://www.oreilly.com/' },
+    #   { 'Amazon.com--Earth\'s Biggest Selection' => 'http://www.amazon.com/exec/obidos/subst/home/home.html/002-1250643-7915022' }
+    #-------------------------
+        { 'Cisco Connection Online by Cisco Systems, Inc.' => 'http://www.cisco.com/' }
+    #-------------------------
     ],
     'foo/baz/blah' => [
         { 'CPAN' => 'http://www.cpan.org/' },
@@ -72,7 +80,7 @@ $items = {  # {{{
         { 'Welcome to Stonehenge!' => 'http://www.stonehenge.com/' }
     ],
     'Public radio' => [
-        { 'From WBEZ in Chicago | This American Life' => 'http://www.thislife.org/' },
+        { 'From WBEZ in Chicago . This American Life' => 'http://www.thislife.org/' },
         { 'NPR Online' => 'http://www.npr.org/' }
     ],
     'Links' => [ { 'Google' => 'http://www.google.com/' } ],
@@ -80,7 +88,12 @@ $items = {  # {{{
         { 'Global Underwater Explorers' => 'http://www.gue.com/' },
         { 'Halcyon' => 'http://www.halcyon.com/' }
     ],
-    'Favorites' => [
+    #-------------------------
+    '.' => [    # NOTE: Previously called 'Favorites'.
+    #-------------------------
+        { 'O\'Reilly & Associates' => 'http://www.oreilly.com/' },
+        { 'Amazon.com--Earth\'s Biggest Selection' => 'http://www.amazon.com/exec/obidos/subst/home/home.html/002-1250643-7915022' },
+    #-------------------------
         { 'ShorterLink.com' => 'http://shorterlink.com/' },
         { 'Thesaurus.com' => 'http://thesaurus.com/' }
     ],
@@ -88,7 +101,7 @@ $items = {  # {{{
         { 'CPAN' => 'http://www.cpan.org/' },
         { 'YAPC' => 'http://www.yapc.org/' }
     ]
-};  # }}}
+};
 is_deeply $c->fetch_items, $items, 'fetched all links';
 
 ok $c->is_item('google.com'), 'is link';
