@@ -1,17 +1,11 @@
 Changes
-MANIFEST			This list of files
-MANIFEST.SKIP
+LICENSE
+MANIFEST
+META.json
+META.yml
 Makefile.PL
 README
-eg/Bookmarks-Netscape.html
-eg/Favorites-WinIE/Links/Google.url
-eg/Favorites-WinIE/ShorterLink.com.url
-eg/Favorites-WinIE/Thesaurus.com.url
-eg/Favorites-WinIE/cs/perl/CPAN.url
-eg/Favorites-WinIE/cs/perl/YAPC.url
-eg/Favorites-WinIE/foo/bar/Google.url
-eg/Favorites-WinIE/foo/baz/blah/CPAN.url
-eg/Favorites-WinIE/foo/baz/blah/YAPC.url
+dist.ini
 lib/URI/Collection.pm
-t/1.t
-t/2.t
+t/00-load.t
+t/author-pod-spell.t

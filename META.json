@@ -1,0 +1,45 @@
+{
+   "abstract" : "RETIRED Input and output link collections in different formats",
+   "author" : [
+      "Gene Boggs <gene@cpan.org>"
+   ],
+   "dynamic_config" : 0,
+   "generated_by" : "Dist::Zilla version 4.300021, CPAN::Meta::Converter version 2.120921",
+   "license" : [
+      "perl_5"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : "2"
+   },
+   "name" : "URI-Collection",
+   "prereqs" : {
+      "configure" : {
+         "requires" : {
+            "ExtUtils::MakeMaker" : "6.30"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "perl" : "5.006"
+         }
+      },
+      "test" : {
+         "requires" : {
+            "Test::More" : "0",
+            "strict" : "0",
+            "warnings" : "0"
+         }
+      }
+   },
+   "release_status" : "testing",
+   "resources" : {
+      "bugtracker" : {
+         "mailto" : "bug-${dist}@rt.cpan.org",
+         "web" : "http://rt.cpan.org/Public/Dist/Display.html?Name=${dist}"
+      }
+   },
+   "version" : "0.0802_1",
+   "x_authority" : "cpan:GENE"
+}
+

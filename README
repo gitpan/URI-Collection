@@ -1,34 +1,13 @@
-URI/Collection distribution
-===========================
 
-INSTALLATION
 
-To install this module type the following:
+This archive contains the distribution URI-Collection,
+version 0.0802_1:
 
-   perl Makefile.PL
-   make
-   make test
-   make install
+  RETIRED Input and output link collections in different formats
 
-DEPENDENCIES
+This software is copyright (c) 2012 by Gene Boggs.
 
-Carp
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
-Cwd
 
-File::Spec
-
-File::Find
-
-File::Path
-
-Config::IniFiles
-
-Netscape::Bookmarks::Alias
-
-COPYRIGHT AND LICENCE
-
-Copyright (C) 2003 Gene Boggs
-
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself. 

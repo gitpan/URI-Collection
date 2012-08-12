@@ -1,4 +1,10 @@
-Revision history for Perl extension URI::Collection
+Revision history for URI-Collection
+
+0.0802_1 20120812
+    - Refactored with Dist::Zilla.
+    - Retred module until I get time to do the TO DO stuff...
+
+# Past history in chronological order:
 
 0.01  Thu Mar  6 23:18:13 2003
 	- original version; created by h2xs 1.22 with options
@@ -91,33 +97,6 @@ Revision history for Perl extension URI::Collection
       even used, apparantly.
     - Added _debug calls to as_bm_file.
 
-0.09_01  Tue May 04 2005 (by Enrique Castilla at ecastillac@yahoo.com)
-    - Changed the internal data structure.
-    - Now, objects URI::Collection encapsulates much more information for each
-      link.
-    - url files that live in directory passed to new are associated to category
-      called '.' in internal data structure.
-    - Bookmarks of Netscape files associated to level 0 categories are 
-      associated to a category called '.' in internal data structure.
-      In previous release this was the pseudo-category 'Favorite'.
-    - Fixed a bug with this category.
-    - Fixed what I think it is a bug, at least in Win32: when passed an
-      absolute dir to new, category names in internal data structure were
-      prefixed with that absolute path.
-      Now categories are relative paths.
-    - Althought now the internal data structure is richer, fetch_items returns
-      the same thing for backward compatibility.
-    - Added a new function fetch that returns the entire internal data
-      structure or select links by regexes.
-    - Added a new function set that changes the entire internal data structure.
-    - Added new test file for testing fetch and set (2.t)
-    - Modified 1.t 
-    - Modified documentation.
-    - All source modifications have been done preserving all source code, adding
-      new source and writting #------------ around (see source). Also test file.
-    - Changed prerequisites in Makefile.PL: it specifies module 
-      Netscape::Bookmarks::Link, but not only it is used, also in currently
-      production version of Netscape::Bookmak::... module doesn't exist
-      'recurse' function, wich is used. Currently this function is in release
-      2.2_01 of distribution package.
-    - Eliminated shell metacharacters in link titles (substituted by '.').
+0.0801  Sun Sep 27 2003
+    - The $VERSION goes on it's own line.
+    - Use an actual number for the version "stamp".

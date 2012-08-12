@@ -1,0 +1,23 @@
+---
+abstract: 'RETIRED Input and output link collections in different formats'
+author:
+  - 'Gene Boggs <gene@cpan.org>'
+build_requires:
+  Test::More: 0
+  strict: 0
+  warnings: 0
+configure_requires:
+  ExtUtils::MakeMaker: 6.30
+dynamic_config: 0
+generated_by: 'Dist::Zilla version 4.300021, CPAN::Meta::Converter version 2.120921'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: URI-Collection
+requires:
+  perl: 5.006
+resources:
+  bugtracker: http://rt.cpan.org/Public/Dist/Display.html?Name=${dist}
+version: 0.0802_1
+x_authority: cpan:GENE
